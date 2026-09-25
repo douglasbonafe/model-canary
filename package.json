@@ -1,0 +1,24 @@
+{
+  "name": "model-canary",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Detect agent behavior changes when the model/provider changes and the app code does not.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "canary": "tsx src/canary.ts",
+    "demo:drift": "rm -f history/demo.jsonl && for i in 1 2 3; do HISTORY=history/demo.jsonl MODEL=sim-v1 tsx src/canary.ts || exit 1; done; HISTORY=history/demo.jsonl MODEL=sim-v2 tsx src/canary.ts; echo \"exit code: $? (1 = drift detected)\"",
+    "eval:promptfoo": "npx -y promptfoo@latest eval -c promptfooconfig.yaml --no-cache",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  }
+}

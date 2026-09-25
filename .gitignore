@@ -1,0 +1,5 @@
+node_modules/
+history/*.jsonl
+!history/.gitkeep
+alert.md
+.promptfoo/

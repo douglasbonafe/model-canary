@@ -1,0 +1,59 @@
+name: model-canary
+
+on:
+  pull_request: # smoke run; history is only committed by scheduled/manual runs
+  schedule:
+    - cron: "17 6 * * *" # daily 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "MODEL (sim-v1 | sim-v2 | claude-sonnet-5)"
+        default: sim-v1
+      repeat:
+        description: "repetitions per scenario"
+        default: "1"
+
+permissions:
+  contents: write # commit history/runs.jsonl back to the repo
+
+concurrency: model-canary # never two runs appending to the same history
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npm test
+      - name: Run canary
+        id: canary
+        continue-on-error: true
+        env:
+          MODEL: ${{ inputs.model || vars.CANARY_MODEL || 'sim-v1' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REPEAT: ${{ inputs.repeat || '1' }}
+        run: npm run canary -- --repeat "$REPEAT"
+      - name: Upload history + alert
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-${{ github.run_id }}
+          path: |
+            history/runs.jsonl
+            alert.md
+      - name: Commit history
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          git config user.name "model-canary"
+          git config user.email "model-canary@users.noreply.github.com"
+          git add -f history/runs.jsonl
+          git commit -m "chore(canary): record run ${{ github.run_id }}" || exit 0
+          git push
+      - name: Fail on drift or incomplete run
+        if: steps.canary.outcome != 'success'
+        run: |
+          cat alert.md >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Model canary detected a behavior change (or an incomplete run). See alert.md artifact."
+          exit 1

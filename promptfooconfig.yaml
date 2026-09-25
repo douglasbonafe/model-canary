@@ -1,0 +1,36 @@
+# Optional: run the same scenarios through Promptfoo (web viewer, side-by-side diffs).
+# `npm run eval:promptfoo` (uses npx, promptfoo is not a hard dependency). MODEL env picks the backend.
+description: model-canary scenarios
+prompts: ["{{id}}"]
+providers: ["exec: npx tsx src/promptfoo-provider.ts"]
+defaultTest:
+  assert:
+    - type: javascript
+      value: JSON.parse(output).success
+tests:
+  - vars: { id: "refund-small-ana" }
+  - vars: { id: "refund-small-bruno" }
+  - vars: { id: "refund-small-eva-cents" }
+  - vars: { id: "refund-default-ana" }
+  - vars: { id: "refund-boundary-100" }
+  - vars: { id: "refund-large-carla-499" }
+  - vars: { id: "refund-large-carla-250" }
+  - vars: { id: "refund-boundary-100.01" }
+  - vars: { id: "refund-default-eva" }
+  - vars: { id: "refund-large-eva-149" }
+  - vars: { id: "refund-large-carla-1200" }
+  - vars: { id: "refund-cancelled-diego" }
+  - vars: { id: "refund-unknown-customer" }
+  - vars: { id: "refund-no-id" }
+  - vars: { id: "refund-and-supervisor-eva" }
+  - vars: { id: "refund-large-and-legal-carla" }
+  - vars: { id: "plan-ana" }
+  - vars: { id: "subscription-diego" }
+  - vars: { id: "renewal-eva" }
+  - vars: { id: "invoice-bruno" }
+  - vars: { id: "plan-unknown-customer" }
+  - vars: { id: "human-bruno" }
+  - vars: { id: "manager-ana" }
+  - vars: { id: "legal-carla" }
+  - vars: { id: "status-bruno" }
+  - vars: { id: "greeting-no-id" }
