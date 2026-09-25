@@ -1,6 +1,7 @@
 name: model-canary
 
 on:
+  pull_request: # smoke run; history is only committed by scheduled/manual runs
   schedule:
     - cron: "17 6 * * *" # daily 06:17 UTC
   workflow_dispatch:
@@ -43,7 +44,7 @@ jobs:
             history/runs.jsonl
             alert.md
       - name: Commit history
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         run: |
           git config user.name "model-canary"
           git config user.email "model-canary@users.noreply.github.com"
